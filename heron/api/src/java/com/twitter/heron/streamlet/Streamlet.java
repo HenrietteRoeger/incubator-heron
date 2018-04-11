@@ -179,6 +179,25 @@ public interface Streamlet<R> {
       SerializableFunction<R, K> keyExtractor, WindowConfig windowCfg,
       T identity, SerializableBiFunction<T, R, ? extends T> reduceFn);
 
+	/**
+	 * Return a new Streamlet that contains a complex event of type C build from the
+	 * events in window windowCfg iff the patternMatcher returns a new Complex
+	 * Event. emits events in case of a pattern match only. I.e. combination of
+	 * reduce and filter function
+	 * 
+	 * @param windowCfg
+	 *            This is a specification of what kind of windowing strategy you
+	 *            like to have. Typical windowing strategies are sliding windows and
+	 *            tumbling windows
+	 * @param patternMatcher
+	 *            This is the function that takes the current event and verifies if
+	 *            a searched pattern is matched. if yes, the function returns a new,
+	 *            complex event and stops further processing of the window.
+	 * @return
+	 */
+	 <S,C> Streamlet<C> detectComplexEvent(WindowConfig windowCfg, S state, SerializableBiFunction<R,S,C> patternMatcher);
+
+
   /**
    * Returns a new Streamlet that is the union of this and the ‘other’ streamlet. Essentially
    * the new streamlet will contain tuples belonging to both Streamlets

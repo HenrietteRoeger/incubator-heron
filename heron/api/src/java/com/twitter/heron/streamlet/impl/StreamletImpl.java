@@ -35,6 +35,7 @@ import com.twitter.heron.streamlet.Sink;
 import com.twitter.heron.streamlet.Source;
 import com.twitter.heron.streamlet.Streamlet;
 import com.twitter.heron.streamlet.WindowConfig;
+import com.twitter.heron.streamlet.impl.streamlets.CEPStreamlet;
 import com.twitter.heron.streamlet.impl.streamlets.ConsumerStreamlet;
 import com.twitter.heron.streamlet.impl.streamlets.FilterStreamlet;
 import com.twitter.heron.streamlet.impl.streamlets.FlatMapStreamlet;
@@ -105,7 +106,8 @@ public abstract class StreamletImpl<R> implements Streamlet<R> {
     SOURCE("generator"),
     SUPPLIER("supplier"),
     TRANSFORM("transform"),
-    UNION("union");
+    UNION("union"),
+	CEP("CEP");
 
     private final String prefix;
 
@@ -416,6 +418,18 @@ public abstract class StreamletImpl<R> implements Streamlet<R> {
     return retval;
   }
 
+  /**
+   * Returns a new Streamlet that contains complex event of type C for each window where the patternMatcher found one in the given window.
+   * @param windowCfg
+   * @param patternMatcher
+   * @return
+   */
+	@Override
+	public <S,C> Streamlet<C> detectComplexEvent(WindowConfig windowCfg, S state, SerializableBiFunction<R,S,C> patternMatcher) {
+		CEPStreamlet<R,S, C> retval = new CEPStreamlet<R,S,C>(this, windowCfg, state, patternMatcher);
+		addChild(retval);
+		return retval;
+	}
   /**
    * Returns a new Streamlet that is the union of this and the ‘other’ streamlet. Essentially
    * the new streamlet will contain tuples belonging to both Streamlets
