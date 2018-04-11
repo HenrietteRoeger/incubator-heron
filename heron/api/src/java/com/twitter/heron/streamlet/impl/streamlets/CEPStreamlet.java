@@ -51,6 +51,7 @@ public class CEPStreamlet<R,S,C> extends StreamletImpl<C> {
 																								// might become a
 																								// problem for pattern
 																								// // detection...
+		// * CustomStreamGrouping might be an alternative! To be found in package com.twitter.heron.api.grouping;
 		return true;
 	}
 }
