@@ -425,7 +425,7 @@ public abstract class StreamletImpl<R> implements Streamlet<R> {
    * @return
    */
 	@Override
-	public <S,C> Streamlet<C> detectComplexEvent(WindowConfig windowCfg, S state, SerializableBiFunction<R,S,C> patternMatcher) {
+	public <S,C> Streamlet<C> detectComplexEvent(WindowConfig windowCfg, S state, SerializableBiFunction<R,S,KeyValue<C,S>> patternMatcher) {
 		CEPStreamlet<R,S, C> retval = new CEPStreamlet<R,S,C>(this, windowCfg, state, patternMatcher);
 		addChild(retval);
 		return retval;

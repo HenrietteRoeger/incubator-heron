@@ -3,6 +3,7 @@ package com.twitter.heron.streamlet.impl.streamlets;
 import java.util.Set;
 
 import com.twitter.heron.api.topology.TopologyBuilder;
+import com.twitter.heron.streamlet.KeyValue;
 import com.twitter.heron.streamlet.SerializableBiFunction;
 import com.twitter.heron.streamlet.SerializableFunction;
 import com.twitter.heron.streamlet.WindowConfig;
@@ -27,11 +28,11 @@ import com.twitter.heron.streamlet.impl.operators.MapOperator;
 public class CEPStreamlet<R,S,C> extends StreamletImpl<C> {
 
 	private StreamletImpl<R> parent;
-	private SerializableBiFunction<R,S, C> patternMatcher;
+	private SerializableBiFunction<R,S,KeyValue<C,S>> patternMatcher;
 	private S state;
 	private WindowConfigImpl windowCfg;
 
-	public CEPStreamlet(StreamletImpl<R> parent, WindowConfig windowCfg, S state, SerializableBiFunction<R,S,C> patternMatcher) {
+	public CEPStreamlet(StreamletImpl<R> parent, WindowConfig windowCfg, S state, SerializableBiFunction<R, S, KeyValue<C,S>> patternMatcher) {
 		this.parent = parent;
 		this.windowCfg = (WindowConfigImpl) windowCfg;
 		this.patternMatcher = patternMatcher;
@@ -45,6 +46,7 @@ public class CEPStreamlet<R,S,C> extends StreamletImpl<C> {
 		 setDefaultNameIfNone(StreamletNamePrefix.CEP, stageNames);
 		CEPOperator<R,S,C> bolt = new CEPOperator<R,S,C>(state, patternMatcher);
 		windowCfg.attachWindowConfig(bolt);
+		
 		bldr.setBolt(getName(), bolt, getNumPartitions()).shuffleGrouping(parent.getName()); // the shuffle grouping
 																								// might become a
 																								// problem for pattern

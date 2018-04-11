@@ -7,24 +7,26 @@ import com.twitter.heron.api.topology.TopologyContext;
 import com.twitter.heron.api.tuple.Tuple;
 import com.twitter.heron.api.tuple.Values;
 import com.twitter.heron.api.windowing.TupleWindow;
+import com.twitter.heron.streamlet.KeyValue;
 import com.twitter.heron.streamlet.SerializableBiFunction;
 import com.twitter.heron.streamlet.SerializablePredicate;
 
 /**
  * An operator that detects a complex event in a window and emits it iff found.
+ * Breaks as soon as the first event is found! 
  * else nothing.
  * 
  * @author roegerhe
  *
  */
-public class CEPOperator<R, S, C> extends StreamletWindowOperator {
+public class CEPOperator<R,S,C> extends StreamletWindowOperator {
 	private static final long serialVersionUID = -4748646871471052706L;
-	private SerializableBiFunction<R, S, C> patternMatcher;
-	S initialState;
+	private SerializableBiFunction<R, S, KeyValue<C,S>> patternMatcher;
+	S state;
 	private OutputCollector collector;
 
-	public CEPOperator(S initialState, SerializableBiFunction<R, S, C> patternMatcher) {
-		this.initialState = initialState;
+	public CEPOperator(S initialState, SerializableBiFunction<R, S, KeyValue<C,S>> patternMatcher) {
+		this.state = initialState;
 		this.patternMatcher = patternMatcher;
 	}
 
@@ -38,10 +40,13 @@ public class CEPOperator<R, S, C> extends StreamletWindowOperator {
 	public void execute(TupleWindow inputWindow) {
 		for (Tuple tuple : inputWindow.get()) {
 			R tup = (R) tuple.getValue(0);
-			C out = patternMatcher.apply(tup, initialState); // if the state changes, it needs to be handled in the
-																// function! this gives the initial state only
-			if (out != null) {
+			KeyValue<C,S> out = patternMatcher.apply(tup, state); //might have more than one element. then the first is the output, the second the state.
+			if (out.getKey() != null) {
 				collector.emit(new Values(out));
+				return; //break if first pattern is found.
+			}
+			else {
+				state = out.getValue(); //update state.
 			}
 		}
 	}

@@ -195,7 +195,7 @@ public interface Streamlet<R> {
 	 *            complex event and stops further processing of the window.
 	 * @return
 	 */
-	 <S,C> Streamlet<C> detectComplexEvent(WindowConfig windowCfg, S state, SerializableBiFunction<R,S,C> patternMatcher);
+	 <S,C> Streamlet<C> detectComplexEvent(WindowConfig windowCfg, S state, SerializableBiFunction<R,S,KeyValue<C,S>> patternMatcher);
 
 
   /**
